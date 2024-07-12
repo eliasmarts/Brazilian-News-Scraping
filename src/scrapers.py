@@ -255,7 +255,7 @@ class CNNNewsScraper():
         """
         driver.get(self.url)
         
-        news_df = self._get_scraped_data()
+        news_df = self._get_scraped_data(driver)
         
         news_df = self._data_cleaning(news_df)
         
