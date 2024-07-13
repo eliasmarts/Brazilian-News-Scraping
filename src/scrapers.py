@@ -9,15 +9,18 @@ from datetime import datetime, timedelta
 class G1NewsScraper():
     """Scraper for the G1 news website"""
 
-    def __init__(self):
+    def __init__(self, n_scrolls = 10):
         self.url = 'https://g1.globo.com/'
         
-    def _scroll_page(self, driver: selenium.webdriver, n_scrolls: int):
+        # how many times to scrool the page
+        self.n_scroll = n_scrolls
+        
+    def _scroll_page(self, driver: selenium.webdriver):
         """Scroll the page by n_scrolls iterations"""
         
         current_height = driver.execute_script("return document.body.scrollHeight")
 
-        for i in range(n_scrolls):
+        for i in range(self.n_scrolls):
             # scroll to the end of the page
             driver.execute_script(f"window.scrollTo(0,document.body.scrollHeight)")
             sleep(1)
@@ -129,7 +132,7 @@ class G1NewsScraper():
         driver.get(self.url)
         sleep(1)
         
-        self._scroll_page(driver, 10)
+        self._scroll_page(driver)
         
         news_df = self._get_scraped_news(driver)
         
@@ -140,19 +143,21 @@ class G1NewsScraper():
         
         
 class CNNNewsScraper():
-    def __init__(self):
+    def __init__(self, n_scrolls = 10):
         self.url = 'https://www.cnnbrasil.com.br/'
         
         # the subpages to acess
         self.themes = ['politica', 'economia', 'esportes', 'pop']
         
+        self.n_scrolls = n_scrolls
         
-    def _scroll_page(self, driver, n_scrolls):
+        
+    def _scroll_page(self, driver):
         """Scroll the page by n_scrolls iterations"""
         current_height = driver.execute_script("return document.body.scrollHeight")
         driver.execute_script(f"window.scrollTo(0,document.body.scrollHeight - 1000)")
 
-        for i in range(n_scrolls):
+        for i in range(self.n_scrolls):
             # try to click in the 'Ver mais noticias' button
             try:
                 driver.find_element(By.CSS_SELECTOR, value='.block-list-get-more-btn').click()
@@ -211,7 +216,7 @@ class CNNNewsScraper():
             driver.get(f'{self.url}{theme}')
             sleep(5)
             
-            self._scroll_page(driver, 10)
+            self._scroll_page(driver)
             
             data = self._scrape_news_from_page(driver, theme)
             
