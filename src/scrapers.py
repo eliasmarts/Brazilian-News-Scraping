@@ -13,7 +13,7 @@ class G1NewsScraper():
         self.url = 'https://g1.globo.com/'
         
         # how many times to scrool the page
-        self.n_scroll = n_scrolls
+        self.n_scrolls = n_scrolls
         
     def _scroll_page(self, driver: selenium.webdriver):
         """Scroll the page by n_scrolls iterations"""

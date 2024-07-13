@@ -42,7 +42,18 @@ def save_output(news_df: pd.DataFrame):
     # Define the path for the CSV file
     csv_file_path = os.path.join(data_folder, 'news.csv')
     
-    news_df.to_csv(csv_file_path, mode='a')
+    # if the file already exists, merge dropping the duplicates
+    if os.path.exists(csv_file_path):
+        # Load the existing data
+        existing_df = pd.read_csv(csv_file_path)
+        
+        # Merge the existing data with the new data
+        combined_df = pd.concat([existing_df, news_df]).drop_duplicates()
+    else:
+        combined_df = news_df
+
+    # Save the combined DataFrame to the CSV file
+    combined_df.to_csv(csv_file_path, index=False)
 
 
 def main():
