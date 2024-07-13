@@ -265,4 +265,117 @@ class CNNNewsScraper():
         news_df = self._data_cleaning(news_df)
         
         return news_df
+    
+    
+class UolNewsScraper():
+    """Scraper for the UOL news website"""
+
+    def __init__(self, n_scrolls = 10):
+        self.url = 'https://noticias.uol.com.br/?clv3=true'
         
+        # how many times to scrool the page
+        self.n_scrolls = n_scrolls
+        
+    def _scroll_page(self, driver: selenium.webdriver):
+        """Scroll the page by n_scrolls iterations"""
+        
+        current_height = driver.execute_script("return document.body.scrollHeight")
+
+        for i in range(self.n_scrolls):
+            # scroll to the end of the page
+            driver.execute_script(f"window.scrollTo(0,document.body.scrollHeight)")
+            sleep(1)
+            new_height = driver.execute_script("return document.body.scrollHeight")
+            
+            
+            # if not autoload
+            if new_height == current_height:
+                # click the 'Veja mais' button
+                driver.find_element(By.CSS_SELECTOR, value='.btn-search').click()
+                
+                # repeat the scroll
+                driver.execute_script(f"window.scrollTo(0,document.body.scrollHeight)")
+                current_height = driver.execute_script("return document.body.scrollHeight")
+            else:
+                current_height = new_height
+                
+            print(f'Scroll {i + 1}, height={current_height}')
+            
+            # time for the page to load
+            sleep(4)
+            
+        
+    def _get_scraped_news(self, driver: selenium.webdriver):
+        """Obtain the scraped news from the website"""
+        html_source = driver.page_source
+        soup = BeautifulSoup(html_source, 'lxml')
+        
+        content = soup.find('section', class_ = 'latest-news')
+        news_list = content.find_all('div', class_ = 'thumb-caption')
+        
+        
+        titles = []
+        times = []
+        resumes = []
+
+        for news in news_list:
+            # obtain the info of a individual news
+            title = news.find('h3', class_ = 'thumb-title')
+            titles.append(title.text)
+
+            time = news.find('time', class_ = 'thumb-date')
+            times.append(None if time is None else time.text)
+
+            resume = news.find('p', class_ = 'thumb-description')
+            resumes.append(None if resume is None else resume.text)
+
+        # create the final dataframe
+        news_df = pd.DataFrame({
+            'Title': titles,
+            'Time': times,
+            'Resume': resumes
+        })     
+
+        # create the final dataframe
+        news_df = pd.DataFrame({
+            'Title': titles,
+            'Time': times,
+            'Resume': resumes
+        })     
+        
+        return news_df
+    
+    def _convert_to_datetime(self, time_str: str) -> datetime:
+        """Convert date in format  '13/07/2024 19h39' to datetime"""
+        return datetime.strptime(time_str, '%d/%m/%Y %Hh%M')
+        
+    
+    def _data_cleaning(self, news_df: pd.DataFrame):
+        """Do simple data cleaning after the scrap"""
+        news_df['Time'] = news_df['Time'].apply(self._convert_to_datetime)
+        return news_df
+
+
+    def scrap_news(self, driver: selenium.webdriver) -> pd.DataFrame:
+        """Scrap the news for the G1 website
+
+        Parameters
+        ----------
+        driver : selenium.webdriver
+            Current webdriver
+
+        Returns
+        -------
+        pd.DataFrame
+            The news scraped
+        """
+        driver.get(self.url)
+        sleep(1)
+        
+        self._scroll_page(driver)
+        
+        news_df = self._get_scraped_news(driver)
+        
+        news_df = self._data_cleaning(news_df)
+        
+        return news_df

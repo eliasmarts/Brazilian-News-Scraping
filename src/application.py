@@ -10,7 +10,8 @@ def scrap_websites(driver: webdriver) -> pd.DataFrame:
     
     scraper_dict = {
         'G1': scrapers.G1NewsScraper(),
-        'CNN': scrapers.CNNNewsScraper()
+        'CNN': scrapers.CNNNewsScraper(),
+        'UOL': scrapers.UolNewsScraper()
     }
     
     scraped_news_dfs = []
