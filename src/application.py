@@ -1,6 +1,7 @@
 from selenium import webdriver
 from selenium.webdriver.firefox.service import Service
 import pandas as pd
+import os
 
 import scrapers
 
@@ -26,19 +27,38 @@ def scrap_websites(driver: webdriver) -> pd.DataFrame:
     return news_df
 
 
+def save_output(news_df: pd.DataFrame):
+    """ save on memory, appending the results to the anterior data saved
+    """
+    # Get the directory of the current file (application.py)
+    current_dir = os.path.dirname(__file__)
+
+    # Construct the path to the data folder
+    data_folder = os.path.join(current_dir, '..', 'data')
+
+    # Ensure the data folder exists
+    os.makedirs(data_folder, exist_ok=True)
+
+    # Define the path for the CSV file
+    csv_file_path = os.path.join(data_folder, 'news.csv')
+    
+    news_df.to_csv(csv_file_path, mode='a')
+
+
 def main():
     # create the web driver
     GECKODRIVER_PATH = '/snap/bin/firefox.geckodriver'
     s = Service(executable_path=GECKODRIVER_PATH)
     # opens a window
     driver = webdriver.Firefox(service=s)
-    
-    # main routine for scraping
-    news_df = scrap_websites(driver)
-    
-    # save on memory
-    # mode a append the results to the anterior data saved
-    news_df.to_csv('../data/news.csv', mode='a')
+    try:
+        # main routine for scraping
+        news_df = scrap_websites(driver)
+        
+        save_output(news_df)
+    finally:
+        # assures the window is closed
+        driver.quit()
 
 
 if __name__ == '__main__':
