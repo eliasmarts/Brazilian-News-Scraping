@@ -4,19 +4,24 @@ from time import sleep
 from selenium.webdriver.common.by import By
 import pandas as pd
 from datetime import datetime, timedelta
+import logging
 
 
 class G1NewsScraper():
     """Scraper for the G1 news website"""
 
-    def __init__(self, n_scrolls = 10):
+    def __init__(self, n_scrolls = 10, logger = None):
         self.url = 'https://g1.globo.com/'
         
         # how many times to scrool the page
         self.n_scrolls = n_scrolls
         
+        self.logger = logger if logger is not None else logging.getLogger(__name__)
+        
     def _scroll_page(self, driver: selenium.webdriver):
         """Scroll the page by n_scrolls iterations"""
+        
+        self.logger.info("Scrolling page")
         
         current_height = driver.execute_script("return document.body.scrollHeight")
 
@@ -37,15 +42,17 @@ class G1NewsScraper():
                 current_height = driver.execute_script("return document.body.scrollHeight")
             else:
                 current_height = new_height
-                
-            print(f'Scroll {i + 1}, height={current_height}')
             
             # time for the page to load
             sleep(4)
             
+        self.logger.info(f"Scrolled to height {current_height}")
+
         
     def _get_scraped_news(self, driver: selenium.webdriver):
         """Obtain the scraped news from the website"""
+        self.logger.info("Scraping data")
+        
         html_source = driver.page_source
         soup = BeautifulSoup(html_source, 'lxml')
         
@@ -85,6 +92,8 @@ class G1NewsScraper():
             'Header': headers,
             'Resume': resumes
         })     
+        
+        self.logger.info(f"Sucess scraping {len(news_df)} news from {self.url}")
         
         return news_df
     
@@ -129,6 +138,8 @@ class G1NewsScraper():
         pd.DataFrame
             The news scraped
         """
+        
+        self.logger.info(f"Loading {self.url}")
         driver.get(self.url)
         sleep(1)
         
@@ -143,7 +154,7 @@ class G1NewsScraper():
         
         
 class CNNNewsScraper():
-    def __init__(self, n_scrolls = 10):
+    def __init__(self, n_scrolls = 10, logger = None):
         self.url = 'https://www.cnnbrasil.com.br/'
         
         # the subpages to acess
@@ -151,9 +162,13 @@ class CNNNewsScraper():
         
         self.n_scrolls = n_scrolls
         
+        self.logger = logger if logger is not None else logging.getLogger(__name__)
+        
         
     def _scroll_page(self, driver):
         """Scroll the page by n_scrolls iterations"""
+        self.logger.info("Scrolling page")
+        
         current_height = driver.execute_script("return document.body.scrollHeight")
         driver.execute_script(f"window.scrollTo(0,document.body.scrollHeight - 1000)")
 
@@ -162,17 +177,17 @@ class CNNNewsScraper():
             try:
                 driver.find_element(By.CSS_SELECTOR, value='.block-list-get-more-btn').click()
             except Exception:
-                print('Error clicking')
+                self.logger.warning(f"Unable to click on see more button")
             
             # scroll to the end of the page
             driver.execute_script(f"window.scrollTo(0,document.body.scrollHeight - 1000)")
             current_height = driver.execute_script("return document.body.scrollHeight")
-                
-            print(f'Scroll {i + 1}, height={current_height}')
             
             # time for the page to load
             sleep(4)
             
+        self.logger.info(f"Scrolled to height {current_height}")
+
     
     def _scrape_news_from_page(self, driver: selenium.webdriver, theme: str) -> pd.DataFrame:
         """Scrape the news of a given page (url/theme)"""
@@ -213,17 +228,23 @@ class CNNNewsScraper():
 
         for theme in self.themes:
             # scrape the page
-            driver.get(f'{self.url}{theme}')
-            sleep(5)
-            
-            self._scroll_page(driver)
-            
-            data = self._scrape_news_from_page(driver, theme)
-            
-            news_dfs.append(data)
+            try:
+                self.logger.info(f"Loading {self.url}{theme}")
+                driver.get(f'{self.url}{theme}')
+                sleep(5)
+                
+                self._scroll_page(driver)
+                
+                data = self._scrape_news_from_page(driver, theme)
+                
+                news_dfs.append(data)
+            except Exception as e:
+                self.logger.error(f"Error scraping {self.url}{theme}: {e}")
             
         # merge all the results of pages
         news_df = pd.concat(news_dfs, axis='rows')
+        
+        self.logger.info(f"Sucess scraping {len(news_df)} news from {self.url}")
         
         return news_df
     
@@ -258,6 +279,7 @@ class CNNNewsScraper():
         pd.DataFrame
             The news scraped
         """
+        self.logger.info(f"Loading {self.url}")
         driver.get(self.url)
         
         news_df = self._get_scraped_data(driver)
@@ -270,14 +292,17 @@ class CNNNewsScraper():
 class UolNewsScraper():
     """Scraper for the UOL news website"""
 
-    def __init__(self, n_scrolls = 10):
+    def __init__(self, n_scrolls = 10, logger = None):
         self.url = 'https://noticias.uol.com.br/?clv3=true'
         
         # how many times to scrool the page
         self.n_scrolls = n_scrolls
         
+        self.logger = logger if logger is not None else logging.getLogger(__name__)
+        
     def _scroll_page(self, driver: selenium.webdriver):
         """Scroll the page by n_scrolls iterations"""
+        self.logger.info("Scrolling page")
         
         current_height = driver.execute_script("return document.body.scrollHeight")
 
@@ -298,15 +323,17 @@ class UolNewsScraper():
                 current_height = driver.execute_script("return document.body.scrollHeight")
             else:
                 current_height = new_height
-                
-            print(f'Scroll {i + 1}, height={current_height}')
             
             # time for the page to load
             sleep(4)
             
+        self.logger.info(f"Scrolled to height {current_height}")
+
         
     def _get_scraped_news(self, driver: selenium.webdriver):
         """Obtain the scraped news from the website"""
+        self.logger.info("Scraping data")
+        
         html_source = driver.page_source
         soup = BeautifulSoup(html_source, 'lxml')
         
@@ -336,12 +363,7 @@ class UolNewsScraper():
             'Resume': resumes
         })     
 
-        # create the final dataframe
-        news_df = pd.DataFrame({
-            'Title': titles,
-            'Time': times,
-            'Resume': resumes
-        })     
+        self.logger.info(f"Sucess scraping {len(news_df)} news from {self.url}")
         
         return news_df
     
@@ -369,6 +391,7 @@ class UolNewsScraper():
         pd.DataFrame
             The news scraped
         """
+        self.logger.info(f"Loading {self.url}")
         driver.get(self.url)
         sleep(1)
         
