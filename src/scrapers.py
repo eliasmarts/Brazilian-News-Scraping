@@ -21,7 +21,7 @@ class G1NewsScraper():
     def _scroll_page(self, driver: selenium.webdriver):
         """Scroll the page by n_scrolls iterations"""
         
-        self.logger.info("Scrolling page")
+        self.logger.info(f"Scrolling page {self.n_scrolls} times")
         
         current_height = driver.execute_script("return document.body.scrollHeight")
 
@@ -40,9 +40,12 @@ class G1NewsScraper():
                 # repeat the scroll
                 driver.execute_script(f"window.scrollTo(0,document.body.scrollHeight)")
                 current_height = driver.execute_script("return document.body.scrollHeight")
+                
             else:
                 current_height = new_height
             
+            
+            self.logger.debug(f"Scroll {i + 1}/{self.n_scrolls}. Height {current_height}")
             # time for the page to load
             sleep(4)
             
@@ -167,7 +170,7 @@ class CNNNewsScraper():
         
     def _scroll_page(self, driver):
         """Scroll the page by n_scrolls iterations"""
-        self.logger.info("Scrolling page")
+        self.logger.info(f"Scrolling page {self.n_scrolls} times")
         
         current_height = driver.execute_script("return document.body.scrollHeight")
         driver.execute_script(f"window.scrollTo(0,document.body.scrollHeight - 1000)")
@@ -183,6 +186,8 @@ class CNNNewsScraper():
             driver.execute_script(f"window.scrollTo(0,document.body.scrollHeight - 1000)")
             current_height = driver.execute_script("return document.body.scrollHeight")
             
+            
+            self.logger.debug(f"Scroll {i + 1}/{self.n_scrolls}. Height {current_height}")
             # time for the page to load
             sleep(4)
             
@@ -302,7 +307,7 @@ class UolNewsScraper():
         
     def _scroll_page(self, driver: selenium.webdriver):
         """Scroll the page by n_scrolls iterations"""
-        self.logger.info("Scrolling page")
+        self.logger.info(f"Scrolling page {self.n_scrolls} times")
         
         current_height = driver.execute_script("return document.body.scrollHeight")
 
@@ -324,6 +329,7 @@ class UolNewsScraper():
             else:
                 current_height = new_height
             
+            self.logger.debug(f"Scroll {i + 1}/{self.n_scrolls}. Height {current_height}")
             # time for the page to load
             sleep(4)
             
