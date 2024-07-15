@@ -76,9 +76,9 @@ def save_output(news_df: pd.DataFrame, logger: logging.Logger):
         # Merge the existing data with the new data
         combined_df = pd.concat([existing_df, news_df])
         
-        duplicated_news = combined_df.duplicated().sum()
+        duplicated_news = combined_df.duplicated(subset=['Title', 'Font']).sum()
         
-        combined_df = combined_df.drop_duplicates()
+        combined_df = combined_df.drop_duplicates(subset=['Title', 'Font'], keep='last')
         
         logger.info(f"{duplicated_news} news are already present on the dataset")
     else:
