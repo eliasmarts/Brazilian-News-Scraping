@@ -9,11 +9,11 @@ import scrapers
 def create_logger():
     # create logger
     logger = logging.getLogger('scrap')
-    logger.setLevel(logging.INFO)
+    logger.setLevel(logging.DEBUG)
 
     # create console handler and set level to debug
     ch = logging.StreamHandler()
-    ch.setLevel(logging.INFO)
+    ch.setLevel(logging.DEBUG)
 
     # create formatter
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -74,7 +74,13 @@ def save_output(news_df: pd.DataFrame, logger: logging.Logger):
         existing_df = pd.read_csv(csv_file_path)
         
         # Merge the existing data with the new data
-        combined_df = pd.concat([existing_df, news_df]).drop_duplicates()
+        combined_df = pd.concat([existing_df, news_df])
+        
+        duplicated_news = combined_df.duplicated().sum()
+        
+        combined_df = combined_df.drop_duplicates()
+        
+        logger.info(f"{duplicated_news} news are already present on the dataset")
     else:
         combined_df = news_df
 
