@@ -60,13 +60,32 @@ class G1NewsScraper():
         soup = BeautifulSoup(html_source, 'lxml')
         
         # the news are split in many containers
-        content_blocks = soup.find_all('div', class_ = '_evg')  
+        content_blocks = soup.find_all('div', class_ = '_evg') 
+        
+        highlight_area = soup.find('div', class_ = 'row small-collapse large-uncollapse')
+        highlighted_news = highlight_area.find_all('ul', class_ = 'bstn-hl-list')
         
         titles = []
         times = []
         themes = []
         headers = []
         resumes = []
+        highlight = []
+
+        for hnews in highlighted_news:
+            title = hnews.find('span', class_ = 'bstn-hl-title gui-color-primary gui-color-hover gui-color-primary-bg-after')
+            titles.append(title.text)
+            
+            theme = hnews.find('span', class_ = 'bstn-hl-chapeu gui-subject gui-color-primary-bg-after')
+            themes.append(None if theme is None else theme.text)
+
+            # FIXME
+            times.append('Há 1 minuto')
+
+            resumes.append(None)
+            headers.append(None)
+            
+            highlight.append(1)
 
         for block in content_blocks:
             news_list = block.find_all('div', class_ = 'feed-post-body')
@@ -86,6 +105,8 @@ class G1NewsScraper():
 
                 resume = news.find('div', class_='feed-post-body-resumo')
                 resumes.append(None if resume is None else resume.text)
+                
+                highlight.append(0)
 
         # create the final dataframe
         news_df = pd.DataFrame({
@@ -93,8 +114,9 @@ class G1NewsScraper():
             'Time': times,
             'Theme': themes,
             'Header': headers,
-            'Resume': resumes
-        })     
+            'Resume': resumes,
+            'Highlighted': highlight
+        })
         
         self.logger.info(f"Sucess scraping {len(news_df)} news from {self.url}")
         
@@ -204,9 +226,24 @@ class CNNNewsScraper():
         content_block = soup.find('div', class_ = 'col__l--9 col--12')
         news_list = content_block.find_all('li', class_ = 'home__list__item')
         
+        highlight_area = soup.find('ul', class_ = 'three__highlights__list row')
+        highlighted_news = highlight_area.find_all('div', class_ = 'three__highlights__titles')
+        
         titles = []
         times = []
         themes = []
+        highlight = []
+        
+        for hnews in highlighted_news:
+            title = hnews.find('h2', class_ = 'block__news__title')
+            titles.append(title.text)
+            
+            themes.append(theme)
+
+            # FIXME
+            times.append(datetime.now().strftime('%d/%m/%Y %H:%M'))
+
+            highlight.append(1)
         
         for news in news_list:
             # obtain the data for a individual news
@@ -218,10 +255,13 @@ class CNNNewsScraper():
             
             themes.append(theme)
             
+            highlight.append(0)
+            
         data = pd.DataFrame({
             'Title': titles,
             'Time': times,
-            'Theme': themes
+            'Theme': themes,
+            'Highlighted': highlight
         })
 
         return data
@@ -350,6 +390,13 @@ class UolNewsScraper():
         titles = []
         times = []
         resumes = []
+        highlight = []
+        
+        # main header news
+        titles.append(soup.find('h2').text)
+        times.append(datetime.now().strftime('%d/%m/%Y %Hh%M'))
+        resumes.append(None)
+        highlight.append(1)
 
         for news in news_list:
             # obtain the info of a individual news
@@ -361,12 +408,14 @@ class UolNewsScraper():
 
             resume = news.find('p', class_ = 'thumb-description')
             resumes.append(None if resume is None else resume.text)
+            highlight.append(0)
 
         # create the final dataframe
         news_df = pd.DataFrame({
             'Title': titles,
             'Time': times,
-            'Resume': resumes
+            'Resume': resumes,
+            'Highlighted': highlight
         })     
 
         self.logger.info(f"Sucess scraping {len(news_df)} news from {self.url}")
