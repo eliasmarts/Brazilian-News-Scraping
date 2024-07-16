@@ -87,3 +87,6 @@ target/
 
 # test notebook
 notebooks/test.ipynb
+
+# test script
+src/test.py

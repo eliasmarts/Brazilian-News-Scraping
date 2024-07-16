@@ -24,6 +24,9 @@ endif
 scrap:
 	$(PYTHON_INTERPRETER) src/application.py
 
+test:
+	$(PYTHON_INTERPRETER) src/test.py
+
 ## Install Python Dependencies
 requirements: test_environment
 	$(PYTHON_INTERPRETER) -m pip install -U pip setuptools wheel
