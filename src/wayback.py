@@ -1,6 +1,9 @@
 import requests
 from datetime import datetime, timedelta
 import pandas as pd
+import logging
+
+logger = logging.getLogger(__name__)
 
 def _generate_timestamps(start_date, end_date, interval_days):
     """
@@ -76,10 +79,12 @@ def obtain_wayback_links(url: str, start_date: str, end_date: str, interval_days
     """
     responses = []
 
+    logger.info('Obtaining links')
+
     timestamps = _generate_timestamps(start_date, end_date, interval_days)
     for i, timestamp in enumerate(timestamps):
         response = _query_wayback(url, timestamp)
         responses.append(response)
-        print(f'Request {i + 1}/{len(timestamps)}', end='\r')
+        logger.info(f'Request {i + 1}/{len(timestamps)}', end='\r')
         
     return _parse_responses(responses)
