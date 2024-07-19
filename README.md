@@ -47,4 +47,6 @@ Each row in the CSV represents a unique article with the above columns providing
 
 ## How to run
 
-You will need Python with the selenium, pandas and Beaultiful soup installed, as well as one [webdriver](https://www.selenium.dev/documentation/webdriver/) installed. Put the webdriver path and correct class into the main of [application.py](src/scrapers.py) . The application is then ready to run.
+You will need Python with the selenium, pandas and Beaultiful soup installed, as well as one [webdriver](https://www.selenium.dev/documentation/webdriver/) installed. Put the webdriver path and correct class into the main of [application.py](src/scrapers.py) .
+
+The dependencies are listed in [environment.yml file](environment.yml) . To automatically create a conda environment to run this project, use **make create_environment**. You can also use any environment that has all the dependencies installed.

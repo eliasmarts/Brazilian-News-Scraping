@@ -1,0 +1,15 @@
+name: brazilian_news
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python
+  - selenium # for the web driver
+  - bs4      # for scraping
+  - pandas   # for saving data
+  - matplotlib # for vizualization
+  - wordcloud  # wordcloud of the results
+  - ipykernel # to run notebooks
+  - pip  # Ensure pip is included
+  - pip:
+      - -e .  # Path to the local package
