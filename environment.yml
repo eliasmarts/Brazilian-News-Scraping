@@ -6,6 +6,7 @@ dependencies:
   - python
   - selenium # for the web driver
   - bs4      # for scraping
+  - lxml     # for scraping
   - pandas   # for saving data
   - matplotlib # for vizualization
   - wordcloud  # wordcloud of the results
