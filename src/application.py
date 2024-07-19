@@ -6,33 +6,17 @@ import logging
 
 import scrapers
 
-def create_logger():
-    # create logger
-    logger = logging.getLogger('scrap')
-    logger.setLevel(logging.DEBUG)
+import src.logging_config
+logger = logging.getLogger('application')
 
-    # create console handler and set level to debug
-    ch = logging.StreamHandler()
-    ch.setLevel(logging.DEBUG)
 
-    # create formatter
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-
-    # add formatter to ch
-    ch.setFormatter(formatter)
-
-    # add ch to logger
-    logger.addHandler(ch)
-    
-    return logger
-
-def scrap_websites(driver: webdriver, logger: logging.Logger) -> pd.DataFrame:
+def scrap_websites(driver: webdriver) -> pd.DataFrame:
     """Scrap the news for the given websites"""
     
     scraper_dict = {
-        'G1': scrapers.G1NewsScraper(logger=logger),
-        'CNN': scrapers.CNNNewsScraper(logger=logger),
-        'UOL': scrapers.UolNewsScraper(logger=logger)
+        'G1': scrapers.G1NewsScraper(),
+        'CNN': scrapers.CNNNewsScraper(),
+        'UOL': scrapers.UolNewsScraper()
     }
     
     scraped_news_dfs = []
@@ -53,7 +37,7 @@ def scrap_websites(driver: webdriver, logger: logging.Logger) -> pd.DataFrame:
     return news_df
 
 
-def save_output(news_df: pd.DataFrame, logger: logging.Logger):
+def save_output(news_df: pd.DataFrame):
     """ save on memory, appending the results to the anterior data saved
     """
     # Get the directory of the current file (application.py)
@@ -91,8 +75,6 @@ def save_output(news_df: pd.DataFrame, logger: logging.Logger):
 
 
 def main():
-    logger = create_logger()
-    
     # create the web driver
     GECKODRIVER_PATH = '/snap/bin/firefox.geckodriver'
     s = Service(executable_path=GECKODRIVER_PATH)
@@ -102,9 +84,9 @@ def main():
     
     try:
         # main routine for scraping
-        news_df = scrap_websites(driver, logger)
+        news_df = scrap_websites(driver)
         
-        save_output(news_df, logger)
+        save_output(news_df)
     finally:
         # assures the window is closed
         driver.quit()
